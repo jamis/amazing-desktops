@@ -50,9 +50,11 @@ You can customize the output by passing any of the following arguments:
 * `maze ga` -- use the built-in "autumn" color scheme
 * `maze g10` -- generate a random color scheme consisting of 10 colors
 * `maze agl` -- generate a maze using the "growing tree" algorithm,
-  specifically it's "longest path" variant. (Other options are:
-  `agw` for a weighted growing tree, and `ab` for a binary tree
-  algorithm).
+  specifically it's "choose last" variant. Available options are:
+  * `agl` --- "choose last" growing tree
+  * `agw` --- weighted growing tree
+  * `ab` --- binary tree algorithm
+  * `aa` --- Aldous-Broder algorithm
 
 For example:
 

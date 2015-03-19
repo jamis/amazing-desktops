@@ -12,6 +12,7 @@
 
 #include "growing_tree.h"
 #include "binary_tree.h"
+#include "aldous_broder.h"
 
 
 void color_distances(image_t *img, distances_t *distances, gradient_t *gradient)
@@ -84,6 +85,7 @@ int main(int argc, char *argv[]) {
           case 'b': algo = binary_tree; break;
           case 'g':
             switch(argv[i][2]) {
+	      case 'a': algo = aldous_broder; break;
               case 'l': algo = growing_tree_mostly_longest; break;
               case 'w': algo = growing_tree_weighted; break;
               default:
