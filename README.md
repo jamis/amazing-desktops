@@ -6,6 +6,13 @@ large random mazes and coloring them using Dijkstra's algorithm.
 
 (Get it? A-MAZE-ing? I so kill me.)
 
+Here are a few sample images to get you hungry for more...
+
+![Brush fire](samples/maze-01.png?raw=true "Brush fire")
+
+![Under the sea](samples/maze-02.png?raw=true "Under the sea")
+
+![Thunderclouds](samples/maze-03.png?raw=true "Thunderclouds")
 
 ## Installation
 
