@@ -82,10 +82,10 @@ int main(int argc, char *argv[]) {
 
       case 'a':
         switch(argv[i][1]) {
+	  case 'a': algo = aldous_broder; break;
           case 'b': algo = binary_tree; break;
           case 'g':
             switch(argv[i][2]) {
-	      case 'a': algo = aldous_broder; break;
               case 'l': algo = growing_tree_mostly_longest; break;
               case 'w': algo = growing_tree_weighted; break;
               default:

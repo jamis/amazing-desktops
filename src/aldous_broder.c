@@ -38,5 +38,8 @@ static void aldous_broder_run(algorithm_t *algo, grid_t *grid) {
       AT(grid, nr, nc) |= OPP(dir);
       count--;
     }
+
+    row = nr;
+    col = nc;
   }
 }
