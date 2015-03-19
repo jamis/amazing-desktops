@@ -62,6 +62,18 @@ The above generates a 1366x768 maze and a color scheme (consisting of
 ten colors). The result is then saved to `maze.png`.
 
 
+## Related (Shameless Plugs)
+
+If you like this, you might also enjoy my book, "Mazes for Programmers":
+
+https://pragprog.com/book/jbmaze/mazes-for-programmers
+
+Information about twelve different maze generation algorithms, lots of
+maze-related projects, as well as a demonstration of how to use
+Dijkstra's algorithm to achieve the kinds of color effects that
+this project uses.
+
+
 ## Authors
 
 Jamis Buck (jamis@jamisbuck.org)
