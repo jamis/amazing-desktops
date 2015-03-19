@@ -41,11 +41,14 @@ typedef struct {
   pixel_t *pixels;
 } image_t;
 
-typedef struct {
+typedef struct algorithm algorithm_t;
+
+struct algorithm {
   void (*prepare)(cell_t**, int, int);
   void (*cleanup)(void);
   int (*selector)(seed_t*, int);
-} algorithm_t;
+  void (*run)(cell_t**, int, int, algorithm_t*);
+};
 
 #define N ( 0x01 )
 #define S ( 0x02 )
@@ -388,19 +391,7 @@ int growing_tree_weighted_selector(seed_t *seeds, int count) {
   return best_index;
 }
 
-static algorithm_t growing_tree_mostly_longest = {
-  .prepare = growing_tree_mostly_longest_prepare,
-  .cleanup = growing_tree_mostly_longest_cleanup,
-  .selector = growing_tree_mostly_longest_selector
-};
-
-static algorithm_t growing_tree_weighted = {
-  .prepare = growing_tree_weighted_prepare,
-  .cleanup = growing_tree_weighted_cleanup,
-  .selector = growing_tree_weighted_selector
-};
-
-void growing_tree(cell_t **cells, int width, int height, int (*selector)(seed_t*, int)) {
+void growing_tree(cell_t **cells, int width, int height, algorithm_t *algo) {
   seed_t *seeds;
   int seed_count;
   int row = rand() % height;
@@ -412,7 +403,7 @@ void growing_tree(cell_t **cells, int width, int height, int (*selector)(seed_t*
   seeds[seed_count++] = TO_SEED(row, col);
 
   while(seed_count > 0) {
-    int index = selector(seeds, seed_count);
+    int index = algo->selector(seeds, seed_count);
     FROM_SEED(seeds[index], row, col);
 
     char neighbors[4];
@@ -440,6 +431,62 @@ void growing_tree(cell_t **cells, int width, int height, int (*selector)(seed_t*
 
   free(seeds);
 }
+
+void binary_tree_run(cell_t **cells, int width, int height, algorithm_t *algo)
+{
+  int row, column;
+
+  for(row = 0; row < height; row++) {
+    for(column = 0; column < width; column++) {
+      int dirs[2];
+      int dir_count = 0;
+
+      if(row > 0) dirs[dir_count++] = N;
+      if(column > 0) dirs[dir_count++] = W;
+
+      if (dir_count > 0) {
+        int dir = dirs[rand() % dir_count];
+        int nr, nc;
+
+        nr = row + DY(dir);
+        nc = column + DX(dir);
+
+        cells[row][column] |= dir;
+        cells[nr][nc] |= OPP(dir);
+      }
+    }
+  }
+}
+
+static algorithm_t growing_tree_mostly_longest = {
+  .prepare = growing_tree_mostly_longest_prepare,
+  .cleanup = growing_tree_mostly_longest_cleanup,
+  .selector = growing_tree_mostly_longest_selector,
+  .run = growing_tree
+};
+
+static algorithm_t growing_tree_weighted = {
+  .prepare = growing_tree_weighted_prepare,
+  .cleanup = growing_tree_weighted_cleanup,
+  .selector = growing_tree_weighted_selector,
+  .run = growing_tree
+};
+
+static algorithm_t binary_tree = {
+  .prepare = NULL,
+  .cleanup = NULL,
+  .selector = NULL,
+  .run = binary_tree_run
+};
+
+
+void run_algorithm(algorithm_t *algo, cell_t **cells, int width, int height)
+{
+  if(algo->prepare) algo->prepare(cells, width, height);
+  algo->run(cells, width, height, algo);
+  if(algo->cleanup) algo->cleanup();
+}
+
 
 void hsv2rgb(
   uint8_t *r, uint8_t *g, uint8_t *b,
@@ -535,7 +582,6 @@ int main(int argc, char *argv[]) {
   long    rseed = time(NULL);
   gradient_t gradient;
   rgb_t path_color = 0x0;
-  //algorithm_t *algo = &growing_tree_weighted;
   algorithm_t *algo = &growing_tree_mostly_longest;
 
   gradient.size = 0;
@@ -561,6 +607,22 @@ int main(int argc, char *argv[]) {
 
       case 'p':
         path_color = strtol(&argv[i][1], NULL, 16);
+        break;
+
+      case 'a':
+        switch(argv[i][1]) {
+          case 'b': algo = &binary_tree; break;
+          case 'g':
+            switch(argv[i][2]) {
+              case 'l': algo = &growing_tree_mostly_longest; break;
+              case 'w': algo = &growing_tree_weighted; break;
+              default:
+                printf("ignoring unrecognized growing tree variant: `%s'\n", argv[i]);
+            }
+            break;
+          default:
+            printf("ignoring unrecognized algorithm: `%s'\n", argv[i]);
+        }
         break;
 
       default:
@@ -595,10 +657,8 @@ int main(int argc, char *argv[]) {
     cells[i] = (cell_t*)malloc(width*sizeof(cell_t));
     memset(cells[i], 0, width);
   }
-  printf("- running Growing Tree algorithm\n");
-  algo->prepare(cells, width, height);
-  growing_tree(cells, width, height, algo->selector);
-  algo->cleanup();
+  printf("- generating maze\n");
+  run_algorithm(algo, cells, width, height);
 
   printf("- running Dijkstra's algorithm\n");
 
