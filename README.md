@@ -45,6 +45,7 @@ You can customize the output by passing any of the following arguments:
 * `maze c112233ff` -- adds the given color to the color scheme (the color
   is a 32-byte RGBA value in hexadecimal format (rrggbbaa). You may
   specify up to 100 such entries (though images look best with 5-10).
+* `maze p-` -- does not draw the longest path.
 * `maze p112233ff` -- draws the longest path through the maze in the
   given RGBA color.
 * `maze ga` -- use the built-in "autumn" color scheme

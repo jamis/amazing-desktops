@@ -55,6 +55,7 @@ int main(int argc, char *argv[]) {
   algorithm_t *algo = growing_tree_mostly_longest;
   distances_t *distances = NULL;
   path_t *path = NULL;
+  int     show_path = 1;
 
   gradient.size = 0;
 
@@ -78,7 +79,10 @@ int main(int argc, char *argv[]) {
         break;
 
       case 'p':
-        path_color = strtol(&argv[i][1], NULL, 16);
+        switch(argv[i][1]) {
+          case '-': show_path = 0; break;
+          default: path_color = strtol(&argv[i][1], NULL, 16);
+        }
         break;
 
       case 'a':
@@ -125,7 +129,7 @@ int main(int argc, char *argv[]) {
     printf("\n");
   }
 
-  if (path_color == 0) {
+  if (show_path && path_color == 0) {
     path_color = gradient.colors[rand() % gradient.size];
     printf("path color: p%08x\n", path_color);
   }
@@ -158,7 +162,7 @@ int main(int argc, char *argv[]) {
 
   image_t *img = image_create(width, height);
   color_distances(img, distances, &gradient);
-  color_path(img, path, path_color);
+  if (show_path) color_path(img, path, path_color);
   image_save(img, "maze.png");
   image_free(img);
 
