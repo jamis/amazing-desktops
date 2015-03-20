@@ -4,7 +4,8 @@ LDFLAGS=-lpng
 
 SOURCES=src/maze.c src/colors.c src/gradient.c src/image.c \
   src/grid.c src/algorithm.c src/distances.c \
-  src/growing_tree.c src/binary_tree.c src/aldous_broder.c
+  src/growing_tree.c src/binary_tree.c src/aldous_broder.c \
+  src/recursive_subdivision.c
 
 OBJECTS=$(SOURCES:.c=.o)
 

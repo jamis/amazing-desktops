@@ -13,6 +13,7 @@
 #include "growing_tree.h"
 #include "binary_tree.h"
 #include "aldous_broder.h"
+#include "recursive_subdivision.h"
 
 
 void color_distances(image_t *img, distances_t *distances, gradient_t *gradient)
@@ -82,8 +83,16 @@ int main(int argc, char *argv[]) {
 
       case 'a':
         switch(argv[i][1]) {
-	  case 'a': algo = aldous_broder; break;
+          case 'a': algo = aldous_broder; break;
           case 'b': algo = binary_tree; break;
+          case 'r':
+            switch(argv[i][2]) {
+              case 's': algo = recursive_subdivision; break;
+              default:
+                printf("ignoring unrecognized recursive algorithm: `%s'\n", argv[i]);
+            }
+            break;
+
           case 'g':
             switch(argv[i][2]) {
               case 'l': algo = growing_tree_mostly_longest; break;

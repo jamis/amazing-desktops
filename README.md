@@ -55,6 +55,7 @@ You can customize the output by passing any of the following arguments:
   * `agw` --- weighted growing tree
   * `ab` --- binary tree algorithm
   * `aa` --- Aldous-Broder algorithm
+  * `ars` --- recursive-subdivision algorithm
 
 For example:
 
