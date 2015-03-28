@@ -42,6 +42,7 @@ You can customize the output by passing any of the following arguments:
   to send a large image.
 * `maze w500` -- sets the width of the image to 500 pixels
 * `maze h500` -- sets the height of the image to 500 pixels
+* `maze q` -- quiet mode (don't write info to the console)
 * `maze c112233ff` -- adds the given color to the color scheme (the color
   is a 32-byte RGBA value in hexadecimal format (rrggbbaa). You may
   specify up to 100 such entries (though images look best with 5-10).
@@ -50,6 +51,7 @@ You can customize the output by passing any of the following arguments:
   given RGBA color.
 * `maze ga` -- use the built-in "autumn" color scheme
 * `maze g10` -- generate a random color scheme consisting of 10 colors
+* `maze obackground.png` -- write the maze to the file `background.png`
 * `maze agl` -- generate a maze using the "growing tree" algorithm,
   specifically it's "choose last" variant. Available options are:
   * `agl` --- "choose last" growing tree

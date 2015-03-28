@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <time.h>
+#include <sys/time.h>
 
 #include "grid.h"
 #include "algorithm.h"
@@ -47,15 +47,17 @@ void color_path(image_t *img, path_t *path, rgb_t color) {
 
 int main(int argc, char *argv[]) {
   grid_t *grid = NULL;
-  int     width = 640, height = 480;
-  int     gradient_size = 5;
-  long    rseed = time(NULL);
+  int width = 640, height = 480;
+  int gradient_size = 5;
   gradient_t gradient;
   rgb_t path_color = 0x0;
   algorithm_t *algo = growing_tree_mostly_longest;
   distances_t *distances = NULL;
   path_t *path = NULL;
-  int     show_path = 1;
+  int show_path = 1;
+  int quiet = 0;
+  char output[255] = "maze.png";
+  unsigned long rseed = 0;
 
   gradient.size = 0;
 
@@ -64,6 +66,8 @@ int main(int argc, char *argv[]) {
       case 'w': width = atoi(&argv[i][1]); break;
       case 'h': height = atoi(&argv[i][1]); break;
       case 's': rseed = atol(&argv[i][1]); break;
+      case 'o': strcpy(output, &argv[i][1]); break;
+      case 'q': quiet = 1; break;
       case 'g':
         switch(argv[i][1]) {
           case 'a':
@@ -115,7 +119,13 @@ int main(int argc, char *argv[]) {
     }
   }
 
-  printf("seed: %ld\n", rseed);
+  if (rseed == 0) {
+    struct timeval tv;
+    gettimeofday(&tv, NULL);
+    rseed = (tv.tv_sec % 4000000) * 1000 + tv.tv_usec / 1000;
+  }
+
+  if(!quiet) printf("seed: %ld\n", rseed);
   srand(rseed);
 
   if (gradient.size == 0) {
@@ -123,15 +133,17 @@ int main(int argc, char *argv[]) {
       gradient_size = 5;
     gradient_random(&gradient, gradient_size);
 
-    printf("colors:");
-    for(int i = 0; i < gradient.size; i++)
-      printf(" c%08x", gradient.colors[i]);
-    printf("\n");
+    if (!quiet) {
+      printf("colors:");
+      for(int i = 0; i < gradient.size; i++)
+        printf(" c%08x", gradient.colors[i]);
+      printf("\n");
+    }
   }
 
   if (show_path && path_color == 0) {
     path_color = gradient.colors[rand() % gradient.size];
-    printf("path color: p%08x\n", path_color);
+    if(!quiet) printf("path color: p%08x\n", path_color);
   }
 
   if(width < 1) width = 1;
@@ -139,10 +151,10 @@ int main(int argc, char *argv[]) {
 
   grid = grid_create(width, height);
 
-  printf("- generating maze\n");
+  if (!quiet) printf("- generating maze\n");
   algorithm_run(algo, grid);
 
-  printf("- running Dijkstra's algorithm\n");
+  if (!quiet) printf("- running Dijkstra's algorithm\n");
 
   seed_t start = TO_SEED(rand() % grid->height, rand() % grid->width);
   distances = dijkstra(grid, &start, 1);
@@ -150,20 +162,22 @@ int main(int argc, char *argv[]) {
   start = distances->max_cell;
   distances_free(&distances);
 
-  printf("- finding distances from most distant cell\n");
+  if (!quiet) printf("- finding distances from most distant cell\n");
   distances = dijkstra(grid, &start, 1);
 
-  printf("- finding longest path\n");
+  if (!quiet) printf("- finding longest path\n");
   path = path_find(grid, distances, distances->max_cell);
   distances_free(&distances);
 
-  printf("- finding distances from path\n");
+  if (!quiet) printf("- finding distances from path\n");
   distances = dijkstra(grid, path->steps, path->length);
 
   image_t *img = image_create(width, height);
   color_distances(img, distances, &gradient);
   if (show_path) color_path(img, path, path_color);
-  image_save(img, "maze.png");
+
+  if (!quiet) printf("- writing to %s\n", output);
+  image_save(img, output);
   image_free(img);
 
   path_free(&path);
