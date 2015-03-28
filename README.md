@@ -54,6 +54,7 @@ You can customize the output by passing any of the following arguments:
 * `maze obackground.png` -- write the maze to the file `background.png`
 * `maze agl` -- generate a maze using the "growing tree" algorithm,
   specifically it's "choose last" variant. Available options are:
+  * `a*` -- choose algorithm randomly (the default)
   * `agl` --- "choose last" growing tree
   * `agw` --- weighted growing tree
   * `ab` --- binary tree algorithm

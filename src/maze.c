@@ -51,7 +51,7 @@ int main(int argc, char *argv[]) {
   int gradient_size = 5;
   gradient_t gradient;
   rgb_t path_color = 0x0;
-  algorithm_t *algo = growing_tree_mostly_longest;
+  algorithm_t *algo = NULL;
   distances_t *distances = NULL;
   path_t *path = NULL;
   int show_path = 1;
@@ -91,6 +91,7 @@ int main(int argc, char *argv[]) {
 
       case 'a':
         switch(argv[i][1]) {
+          case '*': algo = NULL; break;
           case 'a': algo = aldous_broder; break;
           case 'b': algo = binary_tree; break;
           case 'r':
@@ -127,6 +128,33 @@ int main(int argc, char *argv[]) {
 
   if(!quiet) printf("seed: %ld\n", rseed);
   srand(rseed);
+
+  if (algo == NULL) {
+    if(!quiet) printf("algorithm: ");
+    switch(rand() % 5) {
+      case 0:
+        if(!quiet) printf("aa");
+        algo = aldous_broder;
+        break;
+      case 1:
+        if(!quiet) printf("ab");
+        algo = binary_tree;
+        break;
+      case 2:
+        if(!quiet) printf("ars");
+        algo = recursive_subdivision;
+        break;
+      case 3:
+        if(!quiet) printf("agl");
+        algo = growing_tree_mostly_longest;
+        break;
+      case 4:
+        if(!quiet) printf("agw");
+        algo = growing_tree_weighted;
+        break;
+    }
+    if(!quiet) printf("\n");
+  }
 
   if (gradient.size == 0) {
     if (gradient_size < 1 || gradient_size > MAX_GRADIENT_SIZE)
