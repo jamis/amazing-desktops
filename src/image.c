@@ -75,4 +75,3 @@ void image_save(image_t *img, char *name) {
     fclose(fp);
   }
 }
-

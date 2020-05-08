@@ -36,6 +36,55 @@ void color_distances(image_t *img, distances_t *distances, gradient_t *gradient)
   free(colors);
 }
 
+void color_distances_with_smoothing(image_t *img, distances_t *distances, gradient_t *gradient, int radius)
+{
+  rgb_t *colors;
+  int max = distances->max;
+  float *opacities = (float*)malloc((radius * 2) * sizeof(float));
+
+  colors = (rgb_t*)malloc((max+1) * sizeof(int));
+  for(int color = 0; color < max+1; color++) {
+    colors[color] = gradient_at(color, max, gradient);
+  }
+
+  float step = 1.0 / (radius * 2);
+  for(int r = 0; r < radius * 2; r++) {
+    opacities[r] = pow(1.0 - (r * step), 2);
+  }
+
+  for (int distance = max; distance >= 0; distance--) {
+    rgb_t c = colors[distance];
+    uint8_t r = (c >> 24) & 0xFF;
+    uint8_t g = (c >> 16) & 0xFF;
+    uint8_t b = (c >> 8) & 0xFF;
+
+    for (int row = 0; row < distances->height; row++) {
+      for (int col = 0; col < distances->width; col++) {
+        if (distances->matrix[row][col] == distance) {
+          for (int dy = -radius; dy <= radius; dy++) {
+            int y = row + dy;
+            if (y < 0 || y >= distances->height) continue;
+            for (int dx = -radius; dx <= radius; dx++) {
+              int x = col + dx;
+              if (x < 0 || x >= distances->width) continue;
+              pixel_t *p = GETPX(img, x, y);
+              float opacity = opacities[abs(dx) + abs(dy)];
+
+              p->r = (uint8_t)(r * opacity + p->r * (1 - opacity));
+              p->g = (uint8_t)(g * opacity + p->g * (1 - opacity));
+              p->b = (uint8_t)(b * opacity + p->b * (1 - opacity));
+              p->a = 0xFF;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  free(colors);
+  free(opacities);
+}
+
 void color_path(image_t *img, path_t *path, rgb_t color) {
   for(int i = 0; i < path->length; i++) {
     int row, column;
@@ -55,6 +104,8 @@ int main(int argc, char *argv[]) {
   distances_t *distances = NULL;
   path_t *path = NULL;
   int show_path = 1;
+  int blur_radius = 0;
+  int blur_given = 0;
   int quiet = 0;
   char output[255] = "maze.png";
   unsigned long rseed = 0;
@@ -87,6 +138,11 @@ int main(int argc, char *argv[]) {
           case '-': show_path = 0; break;
           default: path_color = strtol(&argv[i][1], NULL, 16);
         }
+        break;
+
+      case 'b':
+        blur_radius = atoi(&argv[i][1]);
+        blur_given = 1;
         break;
 
       case 'a':
@@ -169,6 +225,11 @@ int main(int argc, char *argv[]) {
     }
   }
 
+  if (!blur_given) {
+    blur_radius = rand() % 4;
+    if (!quiet) printf("smoothing: b%d\n", blur_radius);
+  }
+
   if (show_path && path_color == 0) {
     path_color = gradient.colors[rand() % gradient.size];
     if(!quiet) printf("path color: p%08x\n", path_color);
@@ -200,8 +261,13 @@ int main(int argc, char *argv[]) {
   if (!quiet) printf("- finding distances from path\n");
   distances = dijkstra(grid, path->steps, path->length);
 
+  if (!quiet) printf("- drawing image\n");
   image_t *img = image_create(width, height);
-  color_distances(img, distances, &gradient);
+  if (blur_radius > 0) {
+    color_distances_with_smoothing(img, distances, &gradient, blur_radius);
+  } else {
+    color_distances(img, distances, &gradient);
+  }
   if (show_path) color_path(img, path, path_color);
 
   if (!quiet) printf("- writing to %s\n", output);

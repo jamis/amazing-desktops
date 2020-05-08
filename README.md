@@ -60,6 +60,8 @@ You can customize the output by passing any of the following arguments:
   * `ab` --- binary tree algorithm
   * `aa` --- Aldous-Broder algorithm
   * `ars` --- recursive-subdivision algorithm
+* `maze b0` -- sets the blur radius to 0 (disabling smoothing)
+* `maze b1` -- sets the blur radius to 1, making each pixel effectively 3 pixels wide (the pixel itself, and extending `radius` pixels on each side). The extra pixels are blurred, making the image softer. Larger values for the blur radius will take (possibly MUCH) longer to draw.
 
 For example:
 
